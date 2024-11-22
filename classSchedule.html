@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>학급 월별 일정</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+
+  <script src="https://npmcdn.com/flatpickr/dist/l10n/ko.js"></script>
+
+<script>
+	flatpickr.localize(flatpickr.l10ns.ko); // global 적용
+</script>
+  <style>
+    body {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      margin: 0;
+      font-family: Arial, sans-serif;
+    }
+
+    h2, h3 {
+      text-align: center;
+    }
+
+    #calendar {
+      margin: 20px 0;
+    }
+
+    #eventList {
+      width: 80%;
+      border: 1px solid #ddd;
+      padding: 10px;
+      border-radius: 5px;
+      max-width: 500px;
+      text-align: left;
+    }
+
+    .event-item {
+      margin: 5px 0;
+      padding: 5px;
+      border-bottom: 1px solid #eee;
+    }
+  </style>
+</head>
+<body>
+  <h2>월별 학급 일정</h2>
+  <div id="calendar"></div>
+  <h3>일정 리스트</h3>
+  <div id="eventList"></div>
+
+  <script>
+    // LocalStorage에서 일정 로드
+    const loadSchedules = () => {
+      const savedSchedules = localStorage.getItem('flatpickrSchedules');
+      return savedSchedules ? JSON.parse(savedSchedules) : [];
+    };
+
+    // LocalStorage에 일정 저장
+    const saveSchedules = (schedules) => {
+      localStorage.setItem('flatpickrSchedules', JSON.stringify(schedules));
+    };
+
+    // 일정 데이터
+    let schedules = loadSchedules();
+
+    // 일정 목록 업데이트
+    const updateEventList = () => {
+      const eventList = document.getElementById('eventList');
+      eventList.innerHTML = schedules.map(schedule => `
+        <div class="event-item">
+          <strong>${schedule.date}</strong>: ${schedule.title}
+        </div>
+      `).join('');
+    };
+
+    // Flatpickr 초기화
+    const calendar = flatpickr("#calendar", {
+      inline: true, // 인라인으로 표시
+      defaultDate: new Date(), // 현재 날짜 표시
+      onChange: (selectedDates, dateStr) => {
+        const title = prompt("Enter event title:");
+        if (title) {
+          const newEvent = { date: dateStr, title };
+          schedules.push(newEvent);
+          saveSchedules(schedules);
+          updateEventList();
+        }
+      },
+    });
+
+    // 초기 일정 목록 표시
+    updateEventList();
+  </script>
+</body>
+</html>
