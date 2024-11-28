@@ -6,12 +6,10 @@
   <title>학급 월별 일정</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
   <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-
   <script src="https://npmcdn.com/flatpickr/dist/l10n/ko.js"></script>
-
-<script>
-	flatpickr.localize(flatpickr.l10ns.ko); // global 적용
-</script>
+  <script>
+    flatpickr.localize(flatpickr.l10ns.ko); // 한국어 설정
+  </script>
   <style>
     body {
       display: flex;
@@ -54,19 +52,26 @@
   <div id="eventList"></div>
 
   <script>
-    // LocalStorage에서 일정 로드
-    const loadSchedules = () => {
-      const savedSchedules = localStorage.getItem('flatpickrSchedules');
-      return savedSchedules ? JSON.parse(savedSchedules) : [];
-    };
-
-    // LocalStorage에 일정 저장
-    const saveSchedules = (schedules) => {
-      localStorage.setItem('flatpickrSchedules', JSON.stringify(schedules));
-    };
+    // SheetDB API URL
+    const apiURL = "https://sheetdb.io/api/v1/d0lnhp9vp63d1"; // 여기에 SheetDB API URL 삽입
 
     // 일정 데이터
-    let schedules = loadSchedules();
+    let schedules = [];
+
+    // 일정 불러오기
+    const loadSchedules = async () => {
+      try {
+        const response = await fetch(apiURL);
+        const data = await response.json();
+        schedules = data.map(item => ({
+          date: item.Date,
+          title: item.Title
+        }));
+        updateEventList();
+      } catch (error) {
+        console.error("Failed to load schedules:", error);
+      }
+    };
 
     // 일정 목록 업데이트
     const updateEventList = () => {
@@ -82,19 +87,10 @@
     const calendar = flatpickr("#calendar", {
       inline: true, // 인라인으로 표시
       defaultDate: new Date(), // 현재 날짜 표시
-      onChange: (selectedDates, dateStr) => {
-        const title = prompt("Enter event title:");
-        if (title) {
-          const newEvent = { date: dateStr, title };
-          schedules.push(newEvent);
-          saveSchedules(schedules);
-          updateEventList();
-        }
-      },
     });
 
-    // 초기 일정 목록 표시
-    updateEventList();
+    // 초기 일정 목록 로드
+    loadSchedules();
   </script>
 </body>
 </html>
